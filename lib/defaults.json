@@ -1,0 +1,16 @@
+{
+	"serverDefaults": {
+		"path": "/tmp/node-ipc.sock",
+		"host": null,
+		"port": null,
+		"reconnect": 2000,
+		"encoding": "utf8"
+	},
+	"clientDefaults": {
+		"path": "/tmp/node-ipc.sock",
+		"host": null,
+		"port": null,
+		"reconnect": -1,
+		"encoding": "utf8"
+	}
+}
