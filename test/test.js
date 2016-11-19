@@ -42,7 +42,7 @@ describe("Listening", function () {
 	it("on sockets should not throw", function (done) {
 		(function(){
 			var server = new ipc(),
-				address = { path: "/cronerd-test/crdtest.sock" };
+				address = { path: "/tmp/crdtest.sock" };
 			server.listen(address, (e) => { if(e) throw e; done(e); } );
 		}).should.not.throw();
 	});
