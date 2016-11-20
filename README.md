@@ -47,33 +47,47 @@ server.on('/request/:what', function (what, payload) {
 server.on('error', (e) => { console.error('Communication error occurred: ', e); });
 ```
 
+Output
+
+```
+> node test-server.js
+IPC listening on /tmp/qbus-ipc-test.sock
+```
+
 ### Client process
 
 ```javascript
-var client = new ipc();
+var ipc = require("qbus-ipc"),
+	client = new ipc();
+	
 client.connect({ "path": "/tmp/qbus-ipc-test.sock" }, (e) => { 
 
-	// Connection errors are supplied as the first parameter to callback
-	if(e) throw e; 
+    // Connection errors are supplied as the first parameter to callback
+    if(e) throw e; 
 
-	// Instantly a message to the server
-	client.emit('/test/food', 'cash');
+    // Instantly a message to the server
+    client.emit('/request/food', 'cash');
 
 });
 
 // Expect a reply on '/response'
 client.on('/response', function (what) {
 
-	// Should print 'Server said: You asked for food and supplied cash'
-	console.log('Server said: ' + what);
+    // Should print 'Server said: You asked for food and supplied cash'
+    console.log('Server said: ' + what);
 
-	// Work is done now, no need to keep a connection open
-	client.close();
+    // Work is done now, no need to keep a connection open
+    client.close();
 
 });
-
 ```
 
+Output
+
+```
+> node test-client.js
+Server said: You asked for food and supplied cash
+```
 ### Options
 
 All available options for server.listen

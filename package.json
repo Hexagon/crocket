@@ -1,6 +1,6 @@
 {
   "name": "qbus-ipc",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "Efficient and simple node.js TCP/unix socket/windows socket interprocess communication based upon qbus.",
   "author": "Hexagon <github.com/hexagon>",
   "scripts": {
