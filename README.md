@@ -18,7 +18,7 @@ Minimal node.js cross platform IPC communication library.
 
 ### Host process
 
-```
+```javascript
 var ipc = require("qbus-ipc"),
 	server = new ipc();
 
