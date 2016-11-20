@@ -92,3 +92,126 @@ describe("Connecting ...", function () {
 	});
 
 });
+
+describe("One way communication ...", function () {
+
+	it("over tcp should complete and not throw", function (done) {
+		(function(){
+
+			// Create server
+			var server = new ipc();
+			server.listen(address.tcp, (e1) => { 
+				if(e1) throw e1; 
+				// Create client
+				var client = new ipc();
+				client.connect(address.tcp, (e2) => { 
+					if(e2) throw e2; 
+					client.emit('/test/send', 'I am payload');
+					client.close();
+				});
+				client.on('error', (e) => { throw e; }) ;
+			});
+			server.on('/test/:what', function (what, payload) {
+				if (what === 'send' && payload == 'I am payload') {
+					server.close(done);
+				}
+			});
+			server.on('error', (e) => { throw e; }) ;
+
+		}).should.not.throw();
+	});
+
+	it("over sockets should complete and not throw", function (done) {
+		(function(){
+
+			// Create server
+			var server = new ipc();
+			server.listen(address.socket, (e1) => { 
+				if(e1) throw e1; 
+				// Create client
+				var client = new ipc();
+				client.connect(address.socket, (e2) => { 
+					if(e2) throw e2; 
+					client.emit('/test/send', 'I am payload');
+					client.close();
+				});
+				client.on('error', (e) => { throw e; }) ;
+			});
+			server.on('/test/:what', function (what, payload) {
+				if (what === 'send' && payload == 'I am payload') {
+					server.close(done);
+				}
+			});
+			server.on('error', (e) => { throw e; }) ;
+
+		}).should.not.throw();
+	});
+
+});
+
+
+describe("Two way communication ...", function () {
+
+	it("over tcp should complete and not throw", function (done) {
+		(function(){
+
+			// Create server
+			var server = new ipc();
+			server.listen(address.tcp, (e1) => { 
+				if(e1) throw e1; 
+				// Create client
+				var client = new ipc();
+				client.connect(address.tcp, (e2) => { 
+					if(e2) throw e2; 
+					client.emit('/test/send', 'I am payload');
+					client.on('/test/:what?', function (what) {
+						if (what === 'response') {
+							client.close();
+							server.close(done);
+						}
+					});
+				});
+				client.on('error', (e) => { throw e; }) ;
+			});
+			server.on('/test/:what', function (what, payload) {
+				if (what === 'send' && payload == 'I am payload') {
+					server.emit('/test/response');
+				}
+			});
+			server.on('error', (e) => { throw e; }) ;
+
+		}).should.not.throw();
+	});
+
+	it("over sockets should complete and not throw", function (done) {
+		(function(){
+
+			// Create server
+			var server = new ipc();
+			server.listen(address.socket, (e1) => { 
+				if(e1) throw e1; 
+				// Create client
+				var client = new ipc();
+				client.connect(address.socket, (e2) => { 
+					if(e2) throw e2; 
+					client.emit('/test/send', 'I am payload');
+					client.on('/test/:what?', function (what) {
+						if (what === 'response') {
+							client.close();
+							server.close(done);
+						}
+					});
+				});
+				client.on('error', (e) => { throw e; }) ;
+			});
+			server.on('/test/:what', function (what, payload) {
+				if (what === 'send' && payload == 'I am payload') {
+					server.emit('/test/response');
+				}
+			});
+			server.on('error', (e) => { throw e; }) ;
+
+		}).should.not.throw();
+	});
+
+});
