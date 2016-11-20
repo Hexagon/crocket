@@ -2,12 +2,12 @@
 
 [![Build status](https://travis-ci.org/Hexagon/qbus-ipc.svg)](https://travis-ci.org/Hexagon/qbus-ipc) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Minimal cross platform IPC communication library, highlights:
+Minimal node.js cross platform IPC communication library.
 
-	* Communcates over TCP, unix sockets or windows pipe.
-	* [qbus](https://www.npmjs.com/package/qbus) as event mediator
-	* Works locally OR remotely.
-	* Works on Linux, Windows AND macOS
+* Communcates over TCP, unix sockets or windows pipe.
+* [qbus](https://www.npmjs.com/package/qbus) as event mediator
+* Works locally OR remotely.
+* Works on Linux, Windows AND macOS
 
 
 # Installation
@@ -18,7 +18,6 @@ Minimal cross platform IPC communication library, highlights:
 
 ### Host process
 
-**Server process**
 ```
 var ipc = require("qbus-ipc"),
 	server = new ipc();
@@ -48,7 +47,7 @@ server.on('/request/:what', function (what, payload) {
 server.on('error', (e) => { console.error('Communication error occurred: ', e); });
 ```
 
-## Client process
+### Client process
 
 ```javascript
 var client = new ipc();
@@ -75,9 +74,9 @@ client.on('/response', function (what) {
 
 ```
 
-## Options
+### Options
 
-Configuration defaults, and all configurable options are as fallow.
+All available options for server.listen
 
 **Server**
 ```json
@@ -90,6 +89,8 @@ Configuration defaults, and all configurable options are as fallow.
 }
 ```
 
+All available options for client.connect
+
 **Client**
 ```json
 {
@@ -101,11 +102,11 @@ Configuration defaults, and all configurable options are as fallow.
 }
 ```
 
-**Path** is a windows/unix socket path, normalized by [xpipe](https://www.npmjs.com/package/xpipe). As an example, "/tmp/my.sock" is unchanged on Linux/OS X, while it is transformed to "//./pipe/tmp/my.sock" on Windows.
+**Path** is a file-socket path, normalized by [xpipe](https://www.npmjs.com/package/xpipe). As an example, ```/tmp/my.sock``` is unchanged on Linux/OS X, while it is transformed to ```//./pipe/tmp/my.sock``` on Windows.
 
 **Port** is specified if you want to use TCP instead of file sockets.
 
-**Host** Only used in TCP mode. For server, '0.0.0.0' makes qbus-ipc listen on any IPv4-interface. '::' Is the equivalent for IPv6. For client, you specify the host address.
+**Host** Only used in TCP mode. For server, ```0.0.0.0``` makes qbus-ipc listen on any IPv4-interface. ```::``` Is the equivalent for IPv6. For client, you specify the host address.
 
 **Reconnect** is the number of milliseconds to wait before reviving a broken listener/connection, or -1 to disable automtic revive.
 
