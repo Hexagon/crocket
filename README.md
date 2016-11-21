@@ -1,47 +1,46 @@
-# qbus-ipc
+# crocket
 
-[![Build status](https://travis-ci.org/Hexagon/qbus-ipc.svg)](https://travis-ci.org/Hexagon/qbus-ipc) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://img.shields.io/badge/license-MIT-blue.svg)
+[![Build status](https://travis-ci.org/Hexagon/crocket.svg)](https://travis-ci.org/Hexagon/crocket) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://img.shields.io/badge/license-MIT-blue.svg)
 
 Minimal node.js cross platform IPC communication library.
 
 * Communcates over TCP, unix sockets or windows pipe.
-* [qbus](https://www.npmjs.com/package/qbus) as event mediator
-* Works locally OR remotely.
-* Works on Linux, Windows AND macOS
+* Works both locally and remotely.
+* Works on Linux, Windows AND macOS.
+* Pluggable event mediator, uses EventEmitter by default. But can be extended with something like [qbus](https://www.npmjs.com/package/qbus) for extended functionality.
 
 
 # Installation
 
-```npm install qbus-ipc```
+```npm install crocket```
 
 # Usage
 
 ### Host process
 
 ```javascript
-var ipc = require("qbus-ipc"),
+var ipc = require("crocket"),
 	server = new ipc();
 
 // Start listening, this example communicate by file sockets
-server.listen({ "path": "/tmp/qbus-ipc-test.sock" }, (e) => { 
+server.listen({ "path": "/tmp/crocket-ipc-test.sock" }, (e) => { 
 
 	// Fatal errors are supplied as the first parameter to callback
 	if(e) throw e; 
 
 	// All is well if we got this far
-	console.log('IPC listening on /tmp/qbus-ipc-test.sock');
+	console.log('IPC listening on /tmp/crocket-test.sock');
 
 });
 
-// Events are handled by qbus
-//   Documentation:	https://github.com/unkelpehr/qbus
-//   Query tester: 	http://unkelpehr.github.io/qbus/
-server.on('/request/:what', function (what, payload) {
+// Events are handled by EventEmitter by default ...
+server.on('/request/food', function (payload) {
 	
 	// Respond to the query
-	server.emit('/response', 'You asked for ' + what + ' and supplied ' + payload);
+	server.emit('/response', 'You asked for food and supplied ' + payload);
 
 });
+
 
 // React to communication errors
 server.on('error', (e) => { console.error('Communication error occurred: ', e); });
@@ -51,16 +50,16 @@ Output
 
 ```
 > node test-server.js
-IPC listening on /tmp/qbus-ipc-test.sock
+IPC listening on /tmp/crocket-test.sock
 ```
 
 ### Client process
 
 ```javascript
-var ipc = require("qbus-ipc"),
+var ipc = require("crocket"),
 	client = new ipc();
 	
-client.connect({ "path": "/tmp/qbus-ipc-test.sock" }, (e) => { 
+client.connect({ "path": "/tmp/crocket-test.sock" }, (e) => { 
 
     // Connection errors are supplied as the first parameter to callback
     if(e) throw e; 
@@ -88,6 +87,54 @@ Output
 > node test-client.js
 Server said: You asked for food and supplied cash
 ```
+
+### Replacing EventEmitter
+
+### Host process
+
+```javascript
+var ipc = require("crocket"),
+	server = new ipc(),
+
+	// Require the alternative event handler
+	qbus = require("qbus");
+
+// Use!
+server.use(qbus);
+
+// Start listening, this example communicate by file sockets
+server.listen({ "path": "/tmp/crocket-ipc-test.sock" }, (e) => { 
+
+	// Fatal errors are supplied as the first parameter to callback
+	if(e) throw e; 
+
+	// All is well if we got this far
+	console.log('IPC listening on /tmp/crocket-test.sock');
+
+});
+
+// Now we're using qbus to handle events
+//   Documentation:	https://github.com/unkelpehr/qbus
+//   Query tester: 	http://unkelpehr.github.io/qbus/
+server.on('/request/:what', function (what, payload) {
+	
+	// Respond to the query
+	server.emit('/response', 'You asked for ' + what + ' and supplied ' + payload);
+
+});
+
+// React to communication errors
+server.on('error', (e) => { console.error('Communication error occurred: ', e); });
+```
+
+Output
+
+```
+> node test-server.js
+IPC listening on /tmp/crocket-test.sock
+```
+
+
 ### Options
 
 All available options for server.listen
@@ -112,6 +159,7 @@ All available options for client.connect
 	"host": null,
 	"port": null,
 	"reconnect": -1,
+	"timeout": 5000,
 	"encoding": "utf8"
 }
 ```
@@ -120,7 +168,7 @@ All available options for client.connect
 
 **Port** is specified if you want to use TCP instead of file sockets.
 
-**Host** Only used in TCP mode. For server, ```0.0.0.0``` makes qbus-ipc listen on any IPv4-interface. ```::``` Is the equivalent for IPv6. For client, you specify the host address.
+**Host** Only used in TCP mode. For server, ```0.0.0.0``` makes crocket listen on any IPv4-interface. ```::``` Is the equivalent for IPv6. For client, you specify the host address.
 
 **Reconnect** is the number of milliseconds to wait before reviving a broken listener/connection, or -1 to disable automtic revive.
 

@@ -1,16 +1,17 @@
 {
-	"serverDefaults": {
-		"path": "/tmp/node-ipc.sock",
+	"server": {
+		"path": "/tmp/crocket-ipc.sock",
 		"host": null,
 		"port": null,
 		"reconnect": 2000,
 		"encoding": "utf8"
 	},
-	"clientDefaults": {
-		"path": "/tmp/node-ipc.sock",
+	"client": {
+		"path": "/tmp/crocket-ipc.sock",
 		"host": null,
 		"port": null,
 		"reconnect": -1,
+		"timeout": 5000,
 		"encoding": "utf8"
 	}
 }
