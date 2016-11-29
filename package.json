@@ -1,6 +1,6 @@
 {
   "name": "crocket",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "description": "Efficient and simple interprocess communication for unix/windows/macos over tcp or sockets.",
   "author": "Hexagon <github.com/hexagon>",
   "scripts": {
