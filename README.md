@@ -1,6 +1,6 @@
 # crocket
 
-[![Build status](https://travis-ci.org/Hexagon/crocket.svg)](https://travis-ci.org/Hexagon/crocket) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://img.shields.io/badge/license-MIT-blue.svg) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/1e97e542095b4cd4abd17b2407e4b0fc)](https://www.codacy.com/gh/Hexagon/crocket/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/crocket&amp;utm_campaign=Badge_Grade)
+![Node.js CI](https://github.com/Hexagon/crocket/workflows/Node.js%20CI/badge.svg?branch=master) [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://img.shields.io/badge/license-MIT-blue.svg) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/1e97e542095b4cd4abd17b2407e4b0fc)](https://www.codacy.com/gh/Hexagon/crocket/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Hexagon/crocket&amp;utm_campaign=Badge_Grade)
 
 Minimal node.js cross platform IPC communication library.
 
