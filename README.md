@@ -19,8 +19,8 @@ Minimal node.js cross platform IPC communication library.
 ### Host process
 
 ```javascript
-var ipc = require("crocket"),
-	server = new ipc();
+var crocket = require("crocket"),
+	server = new crocket();
 
 // Start listening, this example communicate by file sockets
 server.listen({ "path": "/tmp/crocket-ipc-test.sock" }, (e) => { 
@@ -29,7 +29,7 @@ server.listen({ "path": "/tmp/crocket-ipc-test.sock" }, (e) => {
 	if(e) throw e; 
 
 	// All is well if we got this far
-	console.log('IPC listening on /tmp/crocket-test.sock');
+	console.log('IPC listening on /tmp/crocket-ipc-test.sock');
 
 });
 
@@ -56,8 +56,8 @@ IPC listening on /tmp/crocket-test.sock
 ### Client process
 
 ```javascript
-var ipc = require("crocket"),
-	client = new ipc();
+var crocket = require("crocket"),
+	client = new crocket();
 	
 client.connect({ "path": "/tmp/crocket-test.sock" }, (e) => { 
 
@@ -93,17 +93,16 @@ Server said: You asked for food and supplied cash
 ### Host process
 
 ```javascript
-var ipc = require("crocket"),
-	server = new ipc(),
+var crocket = require("crocket"),
 
 	// Require the alternative event handler
-	qbus = require("qbus");
+	qbus = require("qbus"),
 
-// Use!
-server.use(qbus);
+	// Pass the mediator to the constructor
+	server = new crocket(qbus);
 
 // Start listening, this example communicate by file sockets
-server.listen({ "path": "/tmp/crocket-ipc-test.sock" }, (e) => { 
+server.listen({ "path": "/tmp/crocket-crocket-test.sock" }, (e) => { 
 
 	// Fatal errors are supplied as the first parameter to callback
 	if(e) throw e; 
@@ -142,7 +141,7 @@ All available options for server.listen
 **Server**
 ```json
 {
-	"path": "/tmp/node-ipc.sock",
+	"path": "/tmp/node-crocket.sock",
 	"host": null,
 	"port": null,
 	"reconnect": 2000,
@@ -155,7 +154,7 @@ All available options for client.connect
 **Client**
 ```json
 {
-	"path": "/tmp/node-ipc.sock",
+	"path": "/tmp/node-crocket.sock",
 	"host": null,
 	"port": null,
 	"reconnect": -1,

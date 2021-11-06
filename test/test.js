@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2016 Hexagon <robinnilsson@gmail.com>
+Copyright (c) 2016-2021 Hexagon <robinnilsson@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,336 +24,344 @@ THE SOFTWARE.
 
 /* eslint no-unused-vars: 0 */
 
-"use strict";
-
-var should = require("should"),
+let 
+	suite = require("uvu").suite,
+	assert = require("uvu/assert"),
 	ipc = require("../index.js"),
 	address = {
 		tcp: { host: "127.0.0.1", port: 31338 },
 		socket: { path: "/tmp/crdtest.sock" }
-	}
+	};
 
-describe("Listening ...", function () {
+// Convenience function for asynchronous testing
+const timeout = (timeoutMs, fn) => {
+	return () => { 
+		let to = void 0;
+		return new Promise((resolve, reject) => {
+			fn(resolve, reject);
+			to = setTimeout(() => { reject(new Error("Timeout")); }, timeoutMs);
+		}).finally(() => {
+			clearTimeout(to);
+		});
+	};
+};
 
-	it("on tcp should not throw", function (done) {
-		(function(){
-			var server = new ipc();
-			server.listen(address.tcp, (e) => { if(e) throw e; server.close(done); } );
-		}).should.not.throw();
+// Create a ~6MB payload
+let longpayload = "I am payload";
+for (let i = 0; i < 19;i++) {
+	longpayload += longpayload;
+}
+
+const optionalNew = suite("new");
+
+optionalNew("should be optional", timeout(2000, (resolve) => {
+	assert.not.throws(() => {
+		var server = ipc();
+		server.listen(address.tcp, (e) => { if(e) throw e; server.close(resolve); } );
 	});
+}));
 
-	it("on sockets should not throw", function (done) {
-		(function(){
-			var server = new ipc();
-			server.listen(address.socket, (e) => { if(e) throw e; server.close(done); } );
-		}).should.not.throw();
+optionalNew.run();
+
+const listen = suite("listen");
+
+listen("on tcp should not throw", timeout(2000, (resolve) => {
+	assert.not.throws(() => {
+		var server = new ipc();
+		server.listen(address.tcp, (e) => { if(e) throw e; server.close(resolve); } );
 	});
+}));
 
-});
-
-describe("Connecting ...", function () {
-
-	it("to tcp should not throw", function (done) {
-		(function(){
-
-			// Create server
-			var server = new ipc();
-			server.listen(address.tcp, (e1) => { 
-				if(e1) throw e1; 
-				// Create client
-				var client = new ipc();
-				client.connect(address.tcp, (e2) => { 
-					if(e2) throw e2; 
-					client.close();
-					server.close(done); 
-				});
-			});
-
-		}).should.not.throw();
+listen("on sockets should not throw", timeout(2000, (resolve) => {
+	assert.not.throws(() => {
+		var server = new ipc();
+		server.listen(address.socket, (e) => { if(e) throw e; server.close(resolve); } );
 	});
+}));
 
-	it("to socket should not throw", function (done) {
-		(function(){
+listen.run();
 
-			// Create server
-			var server = new ipc();
-			server.listen(address.socket, (e1) => { 
-				if(e1) throw e1; 
-				// Create client
-				var client = new ipc();
-				client.connect(address.socket, (e2) => { 
-					if(e2) throw e2; 
-					client.close();
-					server.close(done); 
-				});
-			});
+const connect = suite("connect");
 
-		}).should.not.throw();
-	});
-
-});
-
-describe("Connecting to non existing server ...", function () {
-
-	it("with tcp should throw error", function (done) {
-
-		(function(){
-
+connect("to tcp should not throw", timeout(2000, (resolve, reject) => {
+	assert.not.throws(() => {
+		// Create server
+		var server = new ipc();
+		server.listen(address.tcp, (e1) => { 
+			if(e1) throw e1; 
+			// Create client
 			var client = new ipc();
-			client.connect({ host: "asdf", port: 1234, timeout: 500}, (e) => { 
-				if(e) {
-					done();
-				}
+			client.connect(address.tcp, (e2) => { 
+				if(e2) throw e2; 
+				client.close();
+				server.close(resolve); 
 			});
-
-		}).should.not.throw();
+		});
 	});
+}));
 
-	it("with socket should throw error", function (done) {
+connect("to socket should not throw", timeout(2000, (resolve, reject) => {
+	assert.not.throws(() => {
 
-		(function(){
-
+		// Create server
+		var server = new ipc();
+		server.listen(address.socket, (e1) => { 
+			if(e1) throw e1; 
+			// Create client
 			var client = new ipc();
-			client.connect({ path: "/tmp/__lol-asdf-not-existing", timeout: 500}, (e) => { 
-				if(e) {
-					done();
-				}
+			client.connect(address.socket, (e2) => { 
+				if(e2) throw e2; 
+				client.close();
+				server.close(resolve); 
 			});
+		});
 
-		}).should.not.throw();
 	});
+}));
 
-});
+connect.run();
+
+const connectNonExisting = suite("connect to non existing server");
 
 
-describe("Reconnecting ...", function () {
+connectNonExisting("with tcp should return error", timeout(2000, (resolve, reject) => {
 
-	it("with tcp should not throw", function (done) {
-		this.timeout(15000);
+	assert.not.throws(() => {
 
-		(function(){
+		var client = new ipc();
+		client.connect({ host: "asdf", port: 1234, timeout: 500}, (e) => { 
+			if(e) {
+				resolve(e);
+			}
+		});
 
-			var client = new ipc();
-			client.connect({ host: "127.0.0.1", port: 51234, timeout: 500, reconnect: 500}, (e) => { 
-				if(!e) {
-					done();
-				}
-			});
+	});
+}));
 
-			// Start server after 5 seconds
-			var server = new ipc();
+connectNonExisting("with socket should return error", timeout(2000, (resolve, reject) => {
+
+	assert.not.throws(() => {
+
+		var client = new ipc();
+		client.connect({ path: "/tmp/__lol-asdf-not-existing", timeout: 500}, (e) => { 
+			if(e) {
+				resolve();
+			}
+		});
+
+	});
+}));
+
+connectNonExisting.run();
+
+const reconnect = suite("reconnect");
+
+reconnect("with tcp should not throw", timeout(7500, (resolve, reject) => {
+
+	assert.not.throws(() => {
+
+		var qbus = require("qbus");
+		var client = new ipc(qbus);
+		client.connect({ host: "127.0.0.1", port: 51234, timeout: 500, reconnect: 500}, (e) => { 
+			if(!e) {
+				client.emit("/test/this",{});
+				client.close();
+			}
+		});
+
+		// Start server after 5 seconds
+		setTimeout(() => {
+
+			var server = new ipc(qbus);
 			server.listen({ host: "127.0.0.1", port: 51234 } , (e1) => { 
 				if(e1) throw e1; 
-				// Create client
-				var client = new ipc();
-				client.connect(address.socket, (e2) => { 
-					if(e2) throw e2; 
+			});
+			server.on("/test/:what", (what, payload) => {
+				server.close(resolve);
+			});
+			server.on("error", (e) => { throw e; }) ;
+		
+		},5000);
+	});
+}));
+
+reconnect.run();
+
+const altMediator = suite("alternative mediator");
+
+altMediator("over tcp should complete and not throw", timeout(2000, (resolve, reject) => {
+	assert.not.throws(() => {
+
+		// Create server
+		var qbus = require("qbus");
+		var server = new ipc(qbus);
+		server.listen(address.tcp, (e1) => { 
+			if(e1) throw e1; 
+			// Create client
+			var client = new ipc(qbus);
+			client.connect(address.tcp, (e2) => { 
+				if(e2) throw e2; 
+				client.emit("/test/send", "I am payload");
+				client.close();
+			});
+			client.on("error", (e) => { throw e; }) ;
+		});
+		server.on("/test/:what", function (what, payload) {
+			if (what === "send" && payload == "I am payload") {
+				server.close(resolve);
+			}
+		});
+		server.on("error", (e) => { throw e; }) ;
+
+	});
+}));
+
+altMediator("over sockets should complete and not throw (2)", timeout(2000, (resolve, reject) => {
+	assert.not.throws(() => {
+
+		// Create server
+		var qbus = require("qbus"),
+			server = new ipc(qbus);
+		server.listen(address.socket, (e1) => { 
+			if(e1) throw e1; 
+			// Create client
+			var client = new ipc(qbus);
+			client.connect(address.socket, (e2) => { 
+				if(e2) throw e2; 
+				client.emit("/test/send", "I am payload");
+				client.close();
+			});
+			client.on("error", (e) => { throw e; }) ;
+		});
+		server.on("/test/:what", function (what, payload) {
+			if (what === "send" && payload == "I am payload") {
+				server.close(resolve);
+			}
+		});
+		server.on("error", (e) => { throw e; }) ;
+
+	});
+}));
+
+altMediator.run();
+
+const longPayload = suite("long payload");
+
+longPayload("over sockets should complete and not throw (3)", timeout(15000, (resolve, reject) => {
+	assert.not.throws(() => {
+
+		// Create server
+		var server = new ipc();
+		server.listen({ path: "/tmp/crdtest-3.sock" }, (e1) => { 
+			if(e1) throw e1; 
+			// Create client
+			var client = new ipc();
+			client.connect({ path: "/tmp/crdtest-3.sock" }, (e2) => { 
+				if(e2) throw e2; 
+				client.emit("/test/send", longpayload);
+				client.on("/test/reply", function (payload) {
+					assert.equal(payload,longpayload);
 					client.close();
-					server.close(done); 
+					server.close(resolve);
 				});
 			});
+			client.on("error", (e) => { throw e; }) ;
+		});
+		server.on("/test/send", function (payload) {
+			if ( payload == longpayload) {
+				server.emit("/test/reply", longpayload);
+			}
+		});
+		server.on("error", (e) => { throw e; }) ;
 
-		}).should.not.throw();
 	});
+}));
 
-});
+longPayload("over tcp should complete and not throw", timeout(15000, (resolve, reject) => {
+	assert.not.throws(() => {
 
-describe("One way communication (qbus)...", function () {
-
-	it("over tcp should complete and not throw", function (done) {
-		(function(){
-
-			// Create server
-			var server = new ipc(),
-				qbus = require("qbus");
-			server.use(qbus);
-			server.listen(address.tcp, (e1) => { 
-				if(e1) throw e1; 
-				// Create client
-				var client = new ipc();
-				client.use(qbus);
-				client.connect(address.tcp, (e2) => { 
-					if(e2) throw e2; 
-					client.emit('/test/send', 'I am payload');
+		// Create server
+		var server = new ipc();
+		server.listen(address.tcp, (e1) => { 
+			if(e1) throw e1; 
+			// Create client
+			var client = new ipc();
+			client.connect(address.tcp, (e2) => { 
+				if(e2) throw e2; 
+				client.emit("/test/send", longpayload);
+				client.on("/test/reply", function (payload) {
+					assert.equal(payload, longpayload);
 					client.close();
+					server.close(resolve);
 				});
-				client.on('error', (e) => { throw e; }) ;
 			});
-			server.on('/test/:what', function (what, payload) {
-				if (what === 'send' && payload == 'I am payload') {
-					server.close(done);
-				}
-			});
-			server.on('error', (e) => { throw e; }) ;
+			client.on("error", (e) => { throw e; }) ;
+		});
+		server.on("/test/send", function (payload) {
+			if (payload == longpayload) {
+				server.emit("/test/reply", longpayload);
+			}
+		});
+		server.on("error", (e) => { throw e; }) ;
 
-		}).should.not.throw();
 	});
+}));
 
-	it("over sockets should complete and not throw", function (done) {
-		(function(){
+longPayload.run();
 
-			// Create server
-			var server = new ipc(),
-				qbus = require("qbus");
-			server.use(qbus);
-			server.listen(address.socket, (e1) => { 
-				if(e1) throw e1; 
-				// Create client
-				var client = new ipc(),	
-					qbus = require("qbus");
-				client.use(qbus);
-				client.connect(address.socket, (e2) => { 
-					if(e2) throw e2; 
-					client.emit('/test/send', 'I am payload');
+const emitCallback = suite("emit callback");
+emitCallback("should execute over socket", timeout(2000, (resolve, reject) => {
+	assert.not.throws(() => {
+
+		// Create server
+		var server = new ipc();
+		server.listen({ path: "/tmp/crdtest-2.sock" }, (e1) => { 
+			if(e1) throw e1; 
+			// Create client
+			var client = new ipc();
+			client.connect({ path: "/tmp/crdtest-2.sock" }, (e2) => { 
+				if(e2) throw e2; 
+				client.emit("/test/send", longpayload, () => {
 					client.close();
+					server.close(resolve);
 				});
-				client.on('error', (e) => { throw e; }) ;
 			});
-			server.on('/test/:what', function (what, payload) {
-				if (what === 'send' && payload == 'I am payload') {
-					server.close(done);
-				}
-			});
-			server.on('error', (e) => { throw e; }) ;
-
-		}).should.not.throw();
+			client.on("error", (e) => { throw e; }) ;
+		});
+		server.on("/test/send", function (payload) {
+			if ( payload == "I am payload") {
+				server.emit("/test/reply");
+			}
+		});
+		server.on("error", (e) => { throw e; }) ;
 	});
+}));
 
-});
+emitCallback("should execute over tcp", timeout(15000, (resolve, reject) => {
+	assert.not.throws(() => {
 
-
-describe("Two way communication (qbus) ...", function () {
-
-	it("over tcp should complete and not throw", function (done) {
-		(function(){
-
-			// Create server
-			var server = new ipc(),
-				qbus = require("qbus");
-			server.use(qbus);
-			server.listen(address.tcp, (e1) => { 
-				if(e1) throw e1; 
-				// Create client
-				var client = new ipc(),
-					qbus = require("qbus");
-				client.use(qbus);
-				client.connect(address.tcp, (e2) => { 
-					if(e2) throw e2; 
-					client.emit('/test/send', 'I am payload');
-					client.on('/test/:what?', function (what) {
-						if (what === 'response') {
-							client.close();
-							server.close(done);
-						}
-					});
+		// Create server
+		var server = new ipc();
+		server.listen(address.tcp, (e1) => { 
+			if(e1) throw e1; 
+			// Create client
+			var client = new ipc();
+			client.connect(address.tcp, (e2) => { 
+				if(e2) throw e2; 
+				client.emit("/test/send", longpayload, () => {
+					client.close();
+					server.close(resolve);
 				});
-				client.on('error', (e) => { throw e; }) ;
 			});
-			server.on('/test/:what', function (what, payload) {
-				if (what === 'send' && payload == 'I am payload') {
-					server.emit('/test/response');
-				}
-			});
-			server.on('error', (e) => { throw e; }) ;
-
-		}).should.not.throw();
+			client.on("error", (e) => { throw e; }) ;
+		});
+		server.on("/test/send", function (payload) {
+			if ( payload == "I am payload") {
+				server.emit("/test/reply");
+			}
+		});
+		server.on("error", (e) => { throw e; }) ;
 	});
+}));
 
-	it("over sockets should complete and not throw", function (done) {
-		(function(){
-
-			// Create server
-			var server = new ipc(),
-				qbus = require("qbus");
-			server.use(qbus);
-			server.listen(address.socket, (e1) => { 
-				if(e1) throw e1; 
-				// Create client
-				var client = new ipc(),
-					qbus = require("qbus");
-				client.use(qbus);
-				client.connect(address.socket, (e2) => { 
-					if(e2) throw e2; 
-					client.emit('/test/send', 'I am payload');
-					client.on('/test/:what?', function (what) {
-						if (what === 'response') {
-							client.close();
-							server.close(done);
-						}
-					});
-				});
-				client.on('error', (e) => { throw e; }) ;
-			});
-			server.on('/test/:what', function (what, payload) {
-				if (what === 'send' && payload == 'I am payload') {
-					server.emit('/test/response');
-				}
-			});
-			server.on('error', (e) => { throw e; }) ;
-
-		}).should.not.throw();
-	});
-
-});
-
-describe("Two way communication (EventEmitter) ...", function () {
-
-	it("over tcp should complete and not throw", function (done) {
-		(function(){
-
-			// Create server
-			var server = new ipc();
-			server.listen(address.tcp, (e1) => { 
-				if(e1) throw e1; 
-				// Create client
-				var client = new ipc();
-				client.connect(address.tcp, (e2) => { 
-					if(e2) throw e2; 
-					client.emit('/test/send', 'I am payload');
-					client.on('/test/reply', function () {
-						client.close();
-						server.close(done);
-					});
-				});
-				client.on('error', (e) => { throw e; }) ;
-			});
-			server.on('/test/send', function (payload) {
-				if (payload == 'I am payload') {
-					server.emit('/test/reply');
-				}
-			});
-			server.on('error', (e) => { throw e; }) ;
-
-		}).should.not.throw();
-	});
-
-	it("over sockets should complete and not throw", function (done) {
-		(function(){
-
-			// Create server
-			var server = new ipc();
-			server.listen(address.socket, (e1) => { 
-				if(e1) throw e1; 
-				// Create client
-				var client = new ipc();
-				client.connect(address.socket, (e2) => { 
-					if(e2) throw e2; 
-					client.emit('/test/send', 'I am payload');
-					client.on('/test/reply', function () {
-						client.close();
-						server.close(done);
-					});
-				});
-				client.on('error', (e) => { throw e; }) ;
-			});
-			server.on('/test/send', function (payload) {
-				if ( payload == 'I am payload') {
-					server.emit('/test/reply');
-				}
-			});
-			server.on('error', (e) => { throw e; }) ;
-
-		}).should.not.throw();
-	});
-
-});
+emitCallback.run();

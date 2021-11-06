@@ -1,1 +1,1 @@
-module.exports = require("./lib/ipc.js");
+module.exports = require("./lib/crocket.js");
