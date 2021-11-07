@@ -6,7 +6,8 @@
   "main": "./lib/crocket.js",
   "types": "./types/crocket.d.ts",
   "scripts": {
-    "build": "npm run test && npm run build:precleanup && npm run build:typings",
+    "build": "npm update && npm outdated && npm run test && npm run build:precleanup && npm run build:typings",
+    "build:ci": "npm run test && npm run build:precleanup && npm run build:typings",
     "build:precleanup": "(rm -rf types/* || del /Q types\\*)",
     "build:typings": "tsc",
     "test": "npm run test:lint && npm run test:coverage",
