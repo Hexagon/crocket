@@ -144,7 +144,6 @@ All available options for server.listen
 	"path": "/tmp/node-crocket.sock",
 	"host": null,
 	"port": null,
-	"reconnect": 2000,
 	"encoding": "utf8"
 }
 ```
