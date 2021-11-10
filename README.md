@@ -23,13 +23,13 @@ var crocket = require("crocket"),
 	server = new crocket();
 
 // Start listening, this example communicate by file sockets
-server.listen({ "path": "/tmp/crocket-ipc-test.sock" }, (e) => { 
+server.listen({ "path": "/tmp/crocket-test.sock" }, (e) => { 
 
 	// Fatal errors are supplied as the first parameter to callback
 	if(e) throw e; 
 
 	// All is well if we got this far
-	console.log('IPC listening on /tmp/crocket-ipc-test.sock');
+	console.log('IPC listening on /tmp/crocket-test.sock');
 
 });
 
@@ -102,7 +102,7 @@ var crocket = require("crocket"),
 	server = new crocket(qbus);
 
 // Start listening, this example communicate by file sockets
-server.listen({ "path": "/tmp/crocket-crocket-test.sock" }, (e) => { 
+server.listen({ "path": "/tmp/crocket-test.sock" }, (e) => { 
 
 	// Fatal errors are supplied as the first parameter to callback
 	if(e) throw e; 
